@@ -1,4 +1,4 @@
-# MongoDB and Spring Boot Demo
+# Spring Boot With MongoDB
 
 Spring Boot application demonstrating using MongoDB as the datatabase for reading and writing records.
 
@@ -14,7 +14,7 @@ docker-compose up -d
 
 Start Spring Boot application:
 ```
-java -jar target/mongodb-springboot-1.0.0.jar
+java -jar target/springboot-mongodb-1.0.0.jar
 ```
 
 In a terminal window use curl to submit a POST REST request to the application to create an item:
@@ -66,7 +66,7 @@ mvn clean install
 
 Build Docker container:
 ```
-docker build -t ct/mongodb-springboot:latest .
+docker build -t ct/springboot-mongodb:latest .
 ```
 
 Run tests:

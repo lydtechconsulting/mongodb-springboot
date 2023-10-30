@@ -1,5 +1,5 @@
 # Changelog
 
-## [1.0.0] - 2023-10-28
+## [1.0.0] - 2023-10-30
 ### Added
 - Initial project

@@ -1,13 +1,20 @@
 package demo.component;
 
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import demo.rest.api.CreateItemRequest;
 import demo.util.TestRestData;
+import dev.lydtech.component.framework.client.database.MongoDbClient;
 import dev.lydtech.component.framework.client.service.ServiceClient;
 import dev.lydtech.component.framework.extension.TestContainersSetupExtension;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.bson.Document;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 @Slf4j
@@ -24,11 +32,19 @@ import static org.hamcrest.Matchers.notNullValue;
 @ActiveProfiles("component-test")
 public class EndToEndCT {
 
+    MongoClient mongoClient;
+
     @BeforeEach
     public void setup() {
         String serviceBaseUrl = ServiceClient.getInstance().getBaseUrl();
         log.info("Service base URL is: {}", serviceBaseUrl);
         RestAssured.baseURI = serviceBaseUrl;
+        mongoClient = MongoDbClient.getInstance().getMongoClient();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        MongoDbClient.getInstance().close(mongoClient);
     }
 
     @Test
@@ -58,5 +74,10 @@ public class EndToEndCT {
                 .statusCode(HttpStatus.OK.value())
                 .and()
                 .body("name", containsString(request.getName()));
+
+        MongoCollection items = mongoClient.getDatabase("demo").getCollection("items");
+        FindIterable results = items.find(Filters.eq("name", request.getName()));
+        assertThat(results.first(), notNullValue());
+        assertThat(((Document)results.first()).get("name"), equalTo(request.getName()));
     }
 }
