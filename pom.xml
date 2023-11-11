@@ -97,7 +97,8 @@
 								<service.name>${project.name}</service.name>
 								<service.container.logging.enabled>false</service.container.logging.enabled>
 								<mongodb.enabled>true</mongodb.enabled>
-								<mongodb.image.tag>5.0.22</mongodb.image.tag>
+								<mongodb.image.tag>7.0.2</mongodb.image.tag>
+								<mongodb.replica.set>mongo-replica-set</mongodb.replica.set>
 								<mongodb.container.logging.enabled>false</mongodb.container.logging.enabled>
 							</systemPropertyVariables>
 						</configuration>

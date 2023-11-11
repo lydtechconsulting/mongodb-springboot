@@ -14,8 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class Item {
 
-    public static final int VARCHAR_MAX_LENGTH = 4096;
-
     @Id
     private String id;
 

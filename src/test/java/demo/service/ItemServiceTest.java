@@ -7,6 +7,7 @@ import demo.exception.ItemNotFoundException;
 import demo.repository.ItemRepository;
 import demo.rest.api.CreateItemRequest;
 import demo.rest.api.GetItemResponse;
+import demo.rest.api.UpdateItemRequest;
 import demo.util.TestDomainData;
 import demo.util.TestRestData;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,9 +47,28 @@ public class ItemServiceTest {
     }
 
     @Test
+    public void testUpdateItem() {
+        String itemId = randomAlphabetic(8);
+        UpdateItemRequest request = TestRestData.buildUpdateItemRequest(randomAlphabetic(8));
+        when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.of(TestDomainData.buildItem(itemId, request.getName())));
+
+        service.updateItem(itemId, request);
+
+        verify(itemRepositoryMock, times(1)).save(any(Item.class));
+    }
+
+    @Test
+    public void testUpdateItem_NotFound() {
+        String itemId = randomAlphabetic(8);
+        UpdateItemRequest request = TestRestData.buildUpdateItemRequest(randomAlphabetic(8));
+        when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> service.updateItem(itemId, request));
+    }
+
+    @Test
     public void testGetItem() {
         String itemId = randomAlphabetic(8);
-        CreateItemRequest request = TestRestData.buildCreateItemRequest(randomAlphabetic(8));
         when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.of(TestDomainData.buildItem(itemId, "test-item")));
 
         GetItemResponse item = service.getItem(itemId);
@@ -63,5 +83,22 @@ public class ItemServiceTest {
         String itemId = randomAlphabetic(8);
         when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.empty());
         assertThrows(ItemNotFoundException.class, () -> service.getItem(itemId));
+    }
+
+    @Test
+    public void testDeleteItem() {
+        String itemId = randomAlphabetic(8);
+        when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.of(TestDomainData.buildItem(itemId, "test-item")));
+
+        service.deleteItem(itemId);
+
+        verify(itemRepositoryMock, times(1)).findById(itemId);
+    }
+
+    @Test
+    public void testDeleteItem_NotFound() {
+        String itemId = randomAlphabetic(8);
+        when(itemRepositoryMock.findById(itemId)).thenReturn(Optional.empty());
+        assertThrows(ItemNotFoundException.class, () -> service.deleteItem(itemId));
     }
 }

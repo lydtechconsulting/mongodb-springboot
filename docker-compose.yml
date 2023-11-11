@@ -1,9 +1,13 @@
 services:
+
     mongodb:
-        image: mongo:5.0.22
+        hostname: mongodb
+        container_name: mongodb
+        image: mongo:7.0.2
         ports:
             - '27017:27017'
         volumes:
-            - mongodb:/data/db
+            - mongodb_data:/data/db
+
 volumes:
-    mongodb:
+    mongodb_data:

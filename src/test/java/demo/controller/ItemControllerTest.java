@@ -5,6 +5,7 @@ import java.net.URI;
 import demo.exception.ItemNotFoundException;
 import demo.rest.api.CreateItemRequest;
 import demo.rest.api.GetItemResponse;
+import demo.rest.api.UpdateItemRequest;
 import demo.service.ItemService;
 import demo.util.TestRestData;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -33,11 +34,8 @@ public class ItemControllerTest {
         controller = new ItemController(serviceMock);
     }
 
-    /**
-     * Ensure that the REST request is successfully passed on to the service.
-     */
     @Test
-    public void testCreateItem_Success() throws Exception {
+    public void testCreateItem_Success() {
         String itemId = randomAlphabetic(8);
         CreateItemRequest request = TestRestData.buildCreateItemRequest(RandomStringUtils.randomAlphabetic(8));
         when(serviceMock.createItem(request)).thenReturn(itemId);
@@ -47,11 +45,6 @@ public class ItemControllerTest {
         verify(serviceMock, times(1)).createItem(request);
     }
 
-    /**
-     * If an exception is thrown, an error is logged but the processing completes successfully.
-     *
-     * This ensures the consumer offsets are updated so that the message is not redelivered.
-     */
     @Test
     public void testCreateItem_ServiceThrowsException() {
         CreateItemRequest request = TestRestData.buildCreateItemRequest(RandomStringUtils.randomAlphabetic(8));
@@ -59,6 +52,35 @@ public class ItemControllerTest {
         ResponseEntity response = controller.createItem(request);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
         verify(serviceMock, times(1)).createItem(request);
+    }
+
+    @Test
+    public void testUpdateItem_Success() {
+        String itemId = randomAlphabetic(8);
+        UpdateItemRequest request = TestRestData.buildUpdateItemRequest(RandomStringUtils.randomAlphabetic(8));
+        ResponseEntity response = controller.updateItem(itemId, request);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NO_CONTENT));
+        verify(serviceMock, times(1)).updateItem(itemId, request);
+    }
+
+    @Test
+    public void testUpdateItem_NotFound() {
+        String itemId = randomAlphabetic(8);
+        UpdateItemRequest request = TestRestData.buildUpdateItemRequest(RandomStringUtils.randomAlphabetic(8));
+        doThrow(new ItemNotFoundException()).when(serviceMock).updateItem(itemId, request);
+        ResponseEntity response = controller.updateItem(itemId, request);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+        verify(serviceMock, times(1)).updateItem(itemId, request);
+    }
+
+    @Test
+    public void testUpdateItem_ServiceThrowsException() {
+        String itemId = randomAlphabetic(8);
+        UpdateItemRequest request = TestRestData.buildUpdateItemRequest(RandomStringUtils.randomAlphabetic(8));
+        doThrow(new RuntimeException("Service failure")).when(serviceMock).updateItem(itemId, request);
+        ResponseEntity response = controller.updateItem(itemId, request);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+        verify(serviceMock, times(1)).updateItem(itemId, request);
     }
 
     @Test
@@ -80,5 +102,22 @@ public class ItemControllerTest {
         ResponseEntity<GetItemResponse> response = controller.getItem(itemId);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
         verify(serviceMock, times(1)).getItem(itemId);
+    }
+
+    @Test
+    public void testDeleteItem_Success() {
+        String itemId = randomAlphabetic(8);
+        ResponseEntity response = controller.deleteItem(itemId);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NO_CONTENT));
+        verify(serviceMock, times(1)).deleteItem(itemId);
+    }
+
+    @Test
+    public void testDeleteItem_NotFound() {
+        String itemId = randomAlphabetic(8);
+        doThrow(new ItemNotFoundException()).when(serviceMock).deleteItem(itemId);
+        ResponseEntity response = controller.deleteItem(itemId);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+        verify(serviceMock, times(1)).deleteItem(itemId);
     }
 }
