@@ -9,7 +9,7 @@ import demo.rest.api.UpdateItemRequest;
 import demo.util.TestRestData;
 import dev.lydtech.component.framework.client.database.MongoDbClient;
 import dev.lydtech.component.framework.client.service.ServiceClient;
-import dev.lydtech.component.framework.extension.TestContainersSetupExtension;
+import dev.lydtech.component.framework.extension.ComponentTestExtension;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 @Slf4j
-@ExtendWith(TestContainersSetupExtension.class)
+@ExtendWith(ComponentTestExtension.class)
 @ActiveProfiles("component-test")
 public class EndToEndCT {
 
@@ -55,7 +55,7 @@ public class EndToEndCT {
      * The item is then deleted.
      */
     @Test
-    public void testItemCRUD() throws Exception {
+    public void testItemCRUD() {
 
         // Test the POST endpoint to create an item.
         CreateItemRequest createRequest = TestRestData.buildCreateItemRequest(RandomStringUtils.randomAlphabetic(1).toUpperCase()+RandomStringUtils.randomAlphabetic(7).toLowerCase()+"1");
@@ -79,11 +79,23 @@ public class EndToEndCT {
 
         // Ensure the deleted item cannot be found.
         sendGetItemRequest(itemId, HttpStatus.NOT_FOUND);
+    }
 
+    @Test
+    public void testMongoClient() {
+
+        // First create an item.
+        CreateItemRequest createRequest = TestRestData.buildCreateItemRequest(RandomStringUtils.randomAlphabetic(1).toUpperCase()+RandomStringUtils.randomAlphabetic(7).toLowerCase()+"1");
+        Response createItemResponse = sendCreateItemRequest(createRequest);
+        String itemId = createItemResponse.header("Location");
+        assertThat(itemId, notNullValue());
+        log.info("Create item response location header: "+itemId);
+
+        // Connect with the MongoClient to retrieve the item.
         MongoCollection items = mongoClient.getDatabase("demo").getCollection("items");
-        FindIterable results = items.find(Filters.eq("name", updateRequest.getName()));
+        FindIterable results = items.find(Filters.eq("name", createRequest.getName()));
         assertThat(results.first(), notNullValue());
-        assertThat(((Document)results.first()).get("name"), equalTo(updateRequest.getName()));
+        assertThat(((Document)results.first()).get("name"), equalTo(createRequest.getName()));
     }
 
     private static Response sendCreateItemRequest(CreateItemRequest createRequest) {
