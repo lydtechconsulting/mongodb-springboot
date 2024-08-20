@@ -2,6 +2,8 @@
 
 Spring Boot application demonstrating using MongoDB as the datatabase for reading and writing records.
 
+![Spring Boot application with MongoDB database](springboot-mongodb.png)
+
 ## Running The Demo
 
 Build Spring Boot application with Java 17:
@@ -81,6 +83,8 @@ docker-compose down
 ## Component Tests
 
 The test demonstrates the application reading and writing records to MongoDB.  They use a dockerised dockerised MongoDB database and a dockerised instance of the application under test.
+
+![Component testing the Spring Boot application](springboot-mongodb-component-test.png)
 
 For more on the component tests see: https://github.com/lydtechconsulting/component-test-framework
 
